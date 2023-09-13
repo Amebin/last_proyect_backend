@@ -18,6 +18,26 @@ export const roomsRoutes = ()  => {
         res.status(200).send({ status: 'OK', data: rooms })
     })
 
+    router.get('/one/:cid', async (req, res) => {
+        try {
+            if (mongoose.Types.ObjectId.isValid(req.params.cid)) {
+                const room = await roomModel.findById(req.params.cid)
+
+                if (room === null) {
+                    res.status(404).send({ status: 'ERR', data: 'No existe una habitacion con ese ID' })
+                } else {
+                    res.status(200).send({ status: 'OK', data: room })
+                }
+            } else {
+                res.status(400).send({ status: 'ERR', data: 'Formato de ID no válido' })
+            }
+        } catch (err) {
+            res.status(500).send({ status: 'ERR', data: err.message })
+        }
+    })
+
+    
+
     return router
 }
 
