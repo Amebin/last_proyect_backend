@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 import { Router } from 'express'
 
 import roomModel from '../models/rooms.models.js'
+import { avoidConsecutiveSpaces, isIsoDate, verifyToken, checkRoles, checkRequired } from '../middlewares/rooms.middleware.js'
 
 import { body, validationResult } from 'express-validator'
 
@@ -10,8 +11,12 @@ export const roomsRoutes = ()  => {
 
     const validateCreateFields = [
         body('title').isLength({ min: 2, max: 32 }).withMessage('El título debe tener entre 2 y 32 caracteres'),
-        body('price').isNumeric().withMessage('El precio debe ser numérico')
-    ]
+        body('price').isNumeric().withMessage('El precio debe ser numérico'),
+        body('images').isArray({ min: 1, max: 100 }).withMessage('Debes proporcionar al menos una imagen'),
+        body('description').isLength({ min: 2, max: 50 }).withMessage('La descripción debe tener entre 2 y 50 caracteres'),
+        body('avaliableDates').isArray({ min: 1 }).withMessage('Debes proporcionar al menos una fecha disponible'),
+        body('avaliableDates.*').custom(isIsoDate),
+    ]    
 
     router.get('/', async (req, res) => {
         const rooms = await roomModel.find()
@@ -34,14 +39,13 @@ export const roomsRoutes = ()  => {
         } catch (err) {
             res.status(500).send({ status: 'ERR', data: err.message })
         }
-    })
+    })    
 
-    router.post('/', validateCreateFields, async (req, res) => {
+    router.post('/admin', verifyToken, checkRoles(['admin']), checkRequired(['title', 'price', 'avaliableDates']), avoidConsecutiveSpaces, validateCreateFields, async (req, res) => {
         if (validationResult(req).isEmpty()) {
             try {
                 const { title, price, images, description, avaliableDates } = req.body
-                const avaliableDate = new Date(req.body.avaliableDates)
-                const newRoom = { title, price, images, description, avaliableDates: avaliableDate }
+                const newRoom = { title, price, images, description, avaliableDates }
 
                 const process = await roomModel.create(newRoom)
                 
@@ -54,14 +58,21 @@ export const roomsRoutes = ()  => {
         }
     })
 
-    router.put('/:rid', async (req, res) => {
+    router.put('/admin/:rid', verifyToken, checkRoles(['admin']), avoidConsecutiveSpaces, validateCreateFields, async (req, res) => {
         try {
             const id = req.params.rid
+            const updateData = req.body
+    
+            const validationErrors = validationResult(req)
+            if (!validationErrors.isEmpty()) {
+                return res.status(400).json({ status: 'ERR', data: validationErrors.array() })
+            }
+    
             if (mongoose.Types.ObjectId.isValid(id)) {
-                const roomToModify = await roomModel.findOneAndUpdate({ _id: id }, { $set: req.body }, { new: true })
-
+                const roomToModify = await roomModel.findOneAndUpdate({ _id: id }, { $set: updateData }, { new: true })
+    
                 if (!roomToModify) {
-                    res.status(404).send({ status: 'ERR', data: 'No existe tarjeta con ese ID' })
+                    res.status(404).send({ status: 'ERR', data: 'No existe habitación con ese ID' })
                 } else {
                     res.status(200).send({ status: 'OK', data: roomToModify })
                 }
@@ -73,11 +84,11 @@ export const roomsRoutes = ()  => {
         }
     })
 
-    router.delete('/:rid', async (req, res) => {
+    router.delete('/admin/:rid', verifyToken, checkRoles(['admin']), async (req, res) => {
         try {
             const id = req.params.rid
             if (mongoose.Types.ObjectId.isValid(id)) {
-                const roomToDelete = await roomModel.findOneAndDelete({ _id: id });
+                const roomToDelete = await roomModel.findOneAndDelete({ _id: id })
 
                 if (!roomToDelete) {
                     res.status(404).send({ status: 'ERR', data: 'No existe tarjeta con ese ID' })
