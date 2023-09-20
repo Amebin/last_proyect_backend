@@ -70,4 +70,5 @@ const checkRequired = (requiredFields) => {
         next()
     }
 }
+
 export { avoidConsecutiveSpaces, isIsoDate, verifyToken, checkRoles, checkRequired }
