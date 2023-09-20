@@ -7,12 +7,11 @@ const collection = 'bookings'
 const schema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'user', required: true },
     roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'rooms', required: true }, 
-    checkInDate: { type: Date, required: true },
-    checkOutDate: { type: Date, required: true }
+    date: { type: String, required: true }
 })
 
-const reservationModel = mongoose.model(collection, schema);
+const reservationModel = mongoose.model(collection, schema)
 
-export default reservationModel;
+export default reservationModel
 
 
