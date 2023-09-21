@@ -2,8 +2,6 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import express from 'express'
 import mongoose from 'mongoose'
-import bodyParser from 'body-parser'
-
 import { roomsRoutes } from './routes/rooms.routes.js'
 /* import { usersRoutes } from './routes/users.routes.js'
  */
@@ -14,16 +12,15 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017'
 
 const app = express()
 
-app.use(express.json());
+app.use(express.json())
 
-app.use(bodyParser.json());
 app.use(cors({
     origin: '*' // modificar antes del deploy
-}));
-app.use(express.urlencoded({ extended: true }));
+}))
+app.use(express.urlencoded({ extended: true }))
 
-/* app.use('/api/users', usersRoutes());
- */app.use('/api/rooms', roomsRoutes());
+/* app.use('/api/users', usersRoutes())
+ */app.use('/api/rooms', roomsRoutes())
 app.all('*', (req, res) => {
     res.status(404).send({ status: 'ERR', data: 'No se encuentra el endpoint solicitado' })
 })
@@ -31,6 +28,8 @@ app.all('*', (req, res) => {
 app.listen(EXPRESS_PORT, async () => {
     try {
         await mongoose.connect(MONGODB_URI)
+       // await generateDates()
+        
         console.log(`Backend inicializado puerto ${EXPRESS_PORT}`)
     } catch (err) {
         console.error(err.message)
