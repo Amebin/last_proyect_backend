@@ -44,10 +44,10 @@ $ npm i nodemon --save-dev
 
 ### Nombres de variables de entorno, ejemplo de lo que debe contener cada una (archivo .env en raíz del proyecto)
 ```bash
-EXPRESS_PORT=5000
+EXPRESS_PORT=5010
 MONGODB_URI=mongodb://localhost:27017/rolling55i
-MONGODB_URI_REMOTA=mongodb+srv://<usuario>:<clave>@cluster0.4qaobt3.mongodb.net/rolling55i
-REQ_LIMIT=30
+MONGODB_URI_REMOTA=mongodb+srv://<usuario>:<clave>@cluster0.4qaobt3.mongodb.net/hoteleria
+REQ_LIMIT=5
 TOKEN_SECRET=rolling55i
 TOKEN_EXPIRATION=1h
 ```
@@ -65,6 +65,22 @@ $ npm run dev
 
 - Render: [Render.com](https://render.com/)
 - IMPORTANTE para Render!: agregar en la configuración npm i (build command) y node src/app.js o el nombre de app que se haya elegido (start command). Colocar también las variables de entorno necesarias, en este caso no se requiere PORT, y la versión de node se puede manejar mediante la variable NODE_VERSION en lugar del archivo .nvmrc.
+
+### Endpoints users
+- Listado de usuarios: GET /api/users
+- Ver un usuario: GET /api/users/one/:id
+- Login de usuario: POST /api/users/login
+- Carga de usuario: POST /api/users
+- Edición de usuario: PUT /api/users/:id
+- Borrado de usuario: DELETE /api/users/:id
+
+### Endpoints rooms
+- Listado de rooms: GET /api/rooms
+- Ver una room: GET /api/rooms/one/:id
+- Carga de room: POST /api/rooms
+- Edición de room: PUT /api/rooms/:id
+- Borrado de room: DELETE /api/rooms/:id
+- Reserva de room: POST /api/rooms/reserve/:id
 
 
 ### Pruebas de endpoints
