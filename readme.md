@@ -76,11 +76,11 @@ $ npm run dev
 
 ### Endpoints rooms
 - Listado de rooms: GET /api/rooms
-- Ver una room: GET /api/rooms/one/:id
-- Carga de room: POST /api/rooms
-- Edición de room: PUT /api/rooms/:id
-- Borrado de room: DELETE /api/rooms/:id
-- Reserva de room: POST /api/rooms/reserve/:id
+- Ver una room: GET /api/rooms/one/:rid
+- Carga de room: POST /api/rooms/admin
+- Edición de room: PUT /api/rooms/admin/:rid
+- Borrado de room: DELETE /api/rooms/admin/:rid
+- Reserva de room: POST /api/rooms/reserved/:rid
 
 
 ### Pruebas de endpoints
