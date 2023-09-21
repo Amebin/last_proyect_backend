@@ -27,9 +27,7 @@ app.all('*', (req, res) => {
 
 app.listen(EXPRESS_PORT, async () => {
     try {
-        await mongoose.connect(MONGODB_URI)
-       // await generateDates()
-        
+        await mongoose.connect(MONGODB_URI)        
         console.log(`Backend inicializado puerto ${EXPRESS_PORT}`)
     } catch (err) {
         console.error(err.message)
