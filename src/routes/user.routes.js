@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 import { Router } from "express"
 import userModel from "../models/user.models.js"
 import { body, validationResult } from "express-validator"
-import Jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken"
 import { createHash, filterData, checkRequired, checkReadyLogin, isValidPassword, verifyToken, checkRoles, avoidConsecutiveSpaces, checkEmpty } from "../middlewares/user.middleware.js"
 
 export const userRoutes = () => {
@@ -109,7 +109,7 @@ export const userRoutes = () => {
 
                 if (foundUser.email === req.body.email) {
                     if (isValidPassword(foundUser, req.body.password)) {
-                        foundUser._doc.token = Jwt.sign({
+                        foundUser._doc.token = jwt.sign({
                             uid: foundUser._id,
                             name: foundUser.name,
                             email: foundUser.email,
