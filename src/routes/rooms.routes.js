@@ -80,8 +80,6 @@ export const roomsRoutes = ()  => {
             res.status(500).json({ status: 'ERR', data: err.message })
         }
     })
-    
-
 
    /*  verifyToken, checkRoles(['admin']), */
     router.post('/admin', avoidConsecutiveSpaces, validateCreateFields, checkRequired(['title', 'price']), async (req, res) => {
