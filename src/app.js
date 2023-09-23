@@ -3,8 +3,8 @@ import dotenv from 'dotenv'
 import express from 'express'
 import mongoose from 'mongoose'
 import { roomsRoutes } from './routes/rooms.routes.js'
-/* import { usersRoutes } from './routes/users.routes.js'
- */
+import { userRoutes } from './routes/user.routes.js'
+
 dotenv.config()
 
 const EXPRESS_PORT = process.env.EXPRESS_PORT || 3000
@@ -19,8 +19,8 @@ app.use(cors({
 }))
 app.use(express.urlencoded({ extended: true }))
 
-/* app.use('/api/users', usersRoutes())
- */app.use('/api/rooms', roomsRoutes())
+app.use('/api/users', userRoutes())
+app.use('/api/rooms', roomsRoutes())
 app.all('*', (req, res) => {
     res.status(404).send({ status: 'ERR', data: 'No se encuentra el endpoint solicitado' })
 })
