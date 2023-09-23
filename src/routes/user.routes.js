@@ -7,44 +7,44 @@ import { createHash, filterData, checkRequired, checkReadyLogin, isValidPassword
 
 export const userRoutes = () => {
     const router = Router()
-    
+
     const validateCreateFields = [
         body("firstName")
-        .isLength({ min: 2, max: 32 })
-        .withMessage("El nombre debe tener entre 2 y 32 caracteres"),
+            .isLength({ min: 2, max: 32 })
+            .withMessage("El nombre debe tener entre 2 y 32 caracteres"),
         body("lastName")
-        .isLength({ min: 2, max: 32 })
-        .withMessage("El apellido debe tener entre 2 y 32 caracteres"),
+            .isLength({ min: 2, max: 32 })
+            .withMessage("El apellido debe tener entre 2 y 32 caracteres"),
         body("email")
-        .isEmail()
-        .withMessage("Debes proporcionar un email válido"),
+            .isEmail()
+            .withMessage("Debes proporcionar un email válido"),
         body("password")
-        .isLength({ min: 8, max: 32 })
-        .withMessage("La contraseña debe tener entre 8 y 32 caracteres"),
+            .isLength({ min: 8, max: 32 })
+            .withMessage("La contraseña debe tener entre 8 y 32 caracteres"),
     ]
-    
+
     const validateLoginFields = [
         body("email")
-        .isEmail()
-        .withMessage("Debes proporcionar un email válido"),
+            .isEmail()
+            .withMessage("Debes proporcionar un email válido"),
         body("password")
-        .isLength({ min: 8, max: 32 })
-        .withMessage("La contraseña debe tener entre 8 y 32 caracteres"),
+            .isLength({ min: 8, max: 32 })
+            .withMessage("La contraseña debe tener entre 8 y 32 caracteres"),
     ]
-    
+
     router.get("/", async (req, res) => {
         try {
-            const page = parseInt(req.query.page) || 1 
-            const limit = parseInt(req.query.limit) || 10 
-    
-            const skip = (page - 1) * limit 
-    
+            const page = parseInt(req.query.page) || 1
+            const limit = parseInt(req.query.limit) || 10
+
+            const skip = (page - 1) * limit
+
             const users = await userModel.find()
                 .skip(skip)
                 .limit(limit)
-    
+
             const totalCount = await userModel.countDocuments()
-    
+
             res.status(200).send({
                 status: "OK",
                 data: users,
@@ -56,8 +56,8 @@ export const userRoutes = () => {
             res.status(500).send({ status: "ERR", data: error.message })
         }
     })
-    
-    
+
+
     router.get('/one/:uid', async (req, res) => {
         try {
             if (mongoose.Types.ObjectId.isValid(req.params.uid)) {
@@ -75,20 +75,25 @@ export const userRoutes = () => {
             res.status(500).send({ status: 'ERR', data: err.message })
         }
     })
-    
-    
+
+
     router.post("/create", validateCreateFields, async (req, res) => {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
-        return res.status(400).send({ status: "ERR", data: errors.array() })
+            return res.status(400).send({ status: "ERR", data: errors.array() })
         }
-    
+
         try {
-        const hashedPassword = createHash(req.body.password)
-        const user = await userModel.create({ ...req.body, password: hashedPassword })
-        res.status(201).send({ status: "OK", data: user })
+            const existingUser = await userModel.findOne({ email: req.body.email });
+            if (existingUser) {
+                return res.status(400).send({ status: "ERR", data: "Este correo electrónico ya está registrado." });
+            }
+
+            const hashedPassword = createHash(req.body.password)
+            const user = await userModel.create({ ...req.body, password: hashedPassword })
+            res.status(201).send({ status: "OK", data: user })
         } catch (err) {
-        res.status(500).send({ status: "ERR", data: err.message })
+            res.status(500).send({ status: "ERR", data: err.message })
         }
     }
     )
@@ -97,11 +102,11 @@ export const userRoutes = () => {
         if (validationResult(req).isEmpty()) {
             try {
                 const foundUser = res.locals.foundUser
-    
+
                 if (!foundUser) {
                     return res.status(401).send({ status: 'ERR', data: 'Usuario no encontrado' })
                 }
-    
+
                 if (foundUser.email === req.body.email) {
                     if (isValidPassword(foundUser, req.body.password)) {
                         foundUser._doc.token = Jwt.sign({
@@ -131,14 +136,14 @@ export const userRoutes = () => {
         try {
             if (mongoose.Types.ObjectId.isValid(req.params.uid)) {
                 const foundUser = await userModel.findById(req.params.uid)
-    
+
                 if (foundUser === null) {
                     return res.status(404).send({ status: 'ERR', data: 'No existe usuario con ese ID' })
                 } else {
                     if (req.body.password) {
                         req.body.password = createHash(req.body.password)
                     }
-    
+
                     const updatedUser = await userModel.findByIdAndUpdate(req.params.uid, req.body, { new: true })
                     return res.status(200).send({ status: 'OK', data: filterData(updatedUser._doc, ['password']) })
                 }
@@ -171,5 +176,5 @@ export const userRoutes = () => {
     })
 
     return router
-    }
+}
 
