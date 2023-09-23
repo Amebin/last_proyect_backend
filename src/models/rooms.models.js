@@ -16,6 +16,6 @@ const schema = new mongoose.Schema({
     capacity: { type: Number, required: true },
 })
 
-const roomModel = mongoose.model(collection, schema);
+const roomModel = mongoose.model(collection, schema)
 
-export default roomModel;
+export default roomModel
