@@ -36,26 +36,32 @@ export const userRoutes = () => {
         try {
             const page = parseInt(req.query.page) || 1
             const limit = parseInt(req.query.limit) || 10
-
+    
             const skip = (page - 1) * limit
-
+    
             const users = await userModel.find()
                 .skip(skip)
                 .limit(limit)
-
+    
             const totalCount = await userModel.countDocuments()
-
-            res.status(200).send({
+    
+            const response = {
                 status: "OK",
                 data: users,
                 page: page,
                 limit: limit,
                 total: totalCount
-            })
+            };
+    
+            res.status(200).json(response);
         } catch (error) {
-            res.status(500).send({ status: "ERR", data: error.message })
+            // Si ocurre un error, asegúrate de no enviar una respuesta si ya se ha enviado una respuesta anteriormente.
+            if (!res.headersSent) {
+                res.status(500).json({ status: "ERR", data: error.message });
+            }
         }
-    })
+    });
+    
 
 
     router.get('/one/:uid', async (req, res) => {
@@ -106,6 +112,12 @@ export const userRoutes = () => {
                 if (!foundUser) {
                     return res.status(401).send({ status: 'ERR', data: 'Usuario no encontrado' })
                 }
+                
+                /* CODIGO FER */
+
+                if (!foundUser.active) {
+                    return res.status(401).send({ status: 'ERR', data: 'La cuenta está deshabilitada' })
+                }
 
                 if (foundUser.email === req.body.email) {
                     if (isValidPassword(foundUser, req.body.password)) {
@@ -155,8 +167,8 @@ export const userRoutes = () => {
         }
     })
 
-    /*  checkRoles(['admin']), */
-    router.delete('/:uid', verifyToken, async (req, res) => {
+    /*  checkRoles(['admin']), verifyToken */
+    router.delete('/:uid', async (req, res) => {
         try {
             const id = req.params.uid
             if (mongoose.Types.ObjectId.isValid(id)) {

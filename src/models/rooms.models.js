@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import mongoosePaginate from 'mongoose-paginate-v2'
 
 mongoose.pluralize(null)
 
@@ -15,6 +16,8 @@ const schema = new mongoose.Schema({
     size: { type: String, required: true },
     capacity: { type: Number, required: true },
 })
+
+schema.plugin(mongoosePaginate)
 
 const roomModel = mongoose.model(collection, schema)
 
