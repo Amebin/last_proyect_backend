@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 import { Router } from 'express'
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 import roomModel from '../models/rooms.models.js'
 import reservationModel from '../models/reserved.models.js'
@@ -24,8 +25,29 @@ export const roomsRoutes = ()  => {
     ]    
 
     router.get('/', async (req, res) => {
-        const rooms = await roomModel.find()
-        res.status(200).send({ status: 'OK', data: rooms })
+        /* CODIGO FER */
+        try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+
+            const rooms = await roomModel.find()
+
+            const totalCount =await roomModel.countDocuments()
+
+            // Utiliza la función de paginación para obtener las habitaciones
+            const roomsData = await roomModel.paginate({}, { page, limit });
+            res.status(200).send({
+                status: "OK",
+                data: rooms,
+                page: page,
+                limit: limit,
+                total: totalCount
+            });
+        } catch (error) {
+            res.status(500).send({ status: 'ERR', data: error.message })
+        }
+
+
     })
 
     router.get('/one/:rid', async (req, res) => {
@@ -35,7 +57,7 @@ export const roomsRoutes = ()  => {
 
                 if (room === null) {
                     res.status(404).send({ status: 'ERR', data: 'No existe una habitacion con ese ID' })
-                } else {
+                } else {   
                     res.status(200).send({ status: 'OK', data: room })
                 }
             } else {
@@ -51,6 +73,15 @@ export const roomsRoutes = ()  => {
             const room = await roomModel.findById(req.params.rid)
             if (!room) {
                 return res.status(404).json({ status: 'ERR', data: 'La habitación no existe' })
+            }
+
+            const existingReservation = await reservationModel.findOne({
+                roomId: req.params.rid,
+                date: req.body.date
+            });
+    
+            if (existingReservation) {
+                return res.status(400).json({ status: 'ERR', data: 'Ya existe una reserva para esta habitación y fecha' });
             }
             
             if (!room.avaliableDates.includes(req.body.date)) {
