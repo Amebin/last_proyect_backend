@@ -2,9 +2,12 @@ import * as url from 'url'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import userModel from '../models/user.models.js'
+import { validationResult, body } from 'express-validator';
+
 
 const __filename = url.fileURLToPath(import.meta.url)
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
+
 
 const isValidPassword = (userInDb, pass) => {
     return bcrypt.compareSync(pass, userInDb.password);
@@ -100,20 +103,21 @@ const avoidConsecutiveSpaces = (req, res, next) => {
 const hasConsecutiveSpaces = (text) => /\s{2,}/.test(text)
 
 const checkEmpty = (req, res, next) => {
-    const fieldsToCheck = Object.keys(req.body);
-    const invalidFields = fieldsToCheck.filter(field => {
-        const fieldValue = req.body[field];
-        return fieldValue === '' || fieldValue.trim() === '';
-    });
+    try{
+        const fieldsToCheck = Object.keys(req.body);
+        const invalidFields = fieldsToCheck.filter(field => req.body[field] === '' || req.body[field] === ' ' );
 
-    if (invalidFields.length > 0) {
-        return res.status(400).json({
-            status: 'ERR',
-            data: `No se permiten campos vacíos o que contengan solo un espacio en: ${invalidFields.join(', ')}`
-        });
+        if (invalidFields.length > 0) {
+            return res.status(400).json({
+                status: 'ERR',
+                data: `No se permiten campos vacíos en: ${invalidFields.join(', ')}`
+            });
+        }
+
+        next();
+    } catch (err) {
+        return res.status(500).send({ status: 'ERR', data: err.message })
     }
-
-    next();
-}
+};
 
 export { __filename, __dirname, createHash, filterData, checkRequired, checkReadyLogin, isValidPassword, verifyToken, checkRoles,   avoidConsecutiveSpaces, checkEmpty }
